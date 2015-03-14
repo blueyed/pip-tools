@@ -357,6 +357,12 @@ class SpecSet(object):
                     by_qualifiers[qual] = by_qualifiers[qual_or_equal]
                     del by_qualifiers[qual_or_equal]
 
+        def format_source(a, b):
+            return ' ({a} and {b})'.format(
+                a = '[' + ','.join(sources[a]) + ']' if sources[a] != {None} else '-',
+                b = '[' + ','.join(sources[b]) + ']' if sources[b] != {None} else '-',
+            )
+
         # For each qualifier type, apply selection logic.  For the unequality
         # qualifiers, select the value that yields the strongest range
         # possible.
@@ -408,18 +414,20 @@ class SpecSet(object):
                     if qual == op and not ops[op](pinned_version, value):
                         raise ConflictError(
                             "Conflict: {name}=={pinned} with "
-                            "{name}{op}{version}".format(
+                            "{name}{op}{version}{source}.".format(
                                 name=name, pinned=pinned_version,
-                                op=op, version=value))
+                                op=op, version=value,
+                                source=format_source(('==', pinned_version), (op, value))))
                 if qual == '!=':
                     # != is the only qualifier than can have multiple values
                     for val in value:
                         if pinned_version == val:
                             raise ConflictError(
                                 "Conflict: {name}=={pinned} with "
-                                "{name}!={version}".format(
+                                "{name}!={version}{source}.".format(
                                     name=name, pinned=pinned_version,
-                                    version=val))
+                                    version=val,
+                                    source=format_source(('==', pinned_version), ('!=', val))))
 
                 # If no conflicts are found, prefer the pinned version and
                 # discard the inequality pred
