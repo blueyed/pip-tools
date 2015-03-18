@@ -6,7 +6,7 @@ from itertools import chain
 
 from six import string_types
 
-from .version import NormalizedVersion
+from .version import NormalizedVersion, UnsupportedVersionError
 
 
 class ConflictError(Exception):
@@ -358,7 +358,7 @@ class SpecSet(object):
                     del by_qualifiers[qual_or_equal]
 
         def format_source(a):
-            return '[' + ', '.join(sources[a]) + ']' if sources[a] != {None} else '?',
+            return '[' + ', '.join(sources[a]) + ']' if sources[a] != {None} else '?'
 
         def format_source_ab(a, b):
             return ' ({} and {})'.format(format_source(a), format_source(b))
@@ -412,13 +412,18 @@ class SpecSet(object):
 
                 # Perform conflict checks
                 for op in ['>', '>=', '<', '<=']:
-                    if qual == op and not ops[op](pinned_version, value):
-                        raise ConflictError(
-                            "Conflict: {name}=={pinned} with "
-                            "{name}{op}{version}{source}.".format(
-                                name=name, pinned=pinned_version,
-                                op=op, version=value,
-                                source=format_source_ab(('==', pinned_version), (op, value))))
+                    try:
+                        if qual == op and not ops[op](pinned_version, value):
+                            raise ConflictError(
+                                "Conflict: {name}=={pinned} with "
+                                "{name}{op}{version}{source}.".format(
+                                    name=name, pinned=pinned_version,
+                                    op=op, version=value,
+                                    source=format_source_ab(('==', pinned_version), (op, value))))
+                    except UnsupportedVersionError as e:
+                        raise UnsupportedVersionError(e.message + " with {name}{op}{version} from {source}".format(
+                            name=name, op=op, version=value,
+                            source=format_source((op, value))))
                 if qual == '!=':
                     # != is the only qualifier than can have multiple values
                     for val in value:
