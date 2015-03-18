@@ -441,7 +441,7 @@ class PackageManager(BasePackageManager):
         logger.debug('- Downloading package from %s' % (url,))
         with logger.indent():
             _, content = get_file_content(url, link, session=self._session)
-            with open(destination, 'w') as f:
+            with open(destination, 'wb') as f:
                 f.write(content)
 
     def unpack_archive(self, path, target_directory):
@@ -531,7 +531,8 @@ class PackageManager(BasePackageManager):
                     self.unpack_archive(path, unpack_dir)
 
                     # first, check if archive was a wheel
-                    name = find_file(unpack_dir, 'pydist.json')
+                    name = (find_file(unpack_dir, 'pydist.json') or
+                            find_file(unpack_dir, 'metadata.json'))
                     if name:
                         deps = self.read_wheel_requires(name)
                     else:
