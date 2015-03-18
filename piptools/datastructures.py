@@ -357,11 +357,11 @@ class SpecSet(object):
                     by_qualifiers[qual] = by_qualifiers[qual_or_equal]
                     del by_qualifiers[qual_or_equal]
 
-        def format_source(a, b):
-            return ' ({a} and {b})'.format(
-                a = '[' + ','.join(sources[a]) + ']' if sources[a] != {None} else '-',
-                b = '[' + ','.join(sources[b]) + ']' if sources[b] != {None} else '-',
-            )
+        def format_source(a):
+            return '[' + ', '.join(sources[a]) + ']' if sources[a] != {None} else '?',
+
+        def format_source_ab(a, b):
+            return ' ({} and {})'.format(format_source(a), format_source(b))
 
         # For each qualifier type, apply selection logic.  For the unequality
         # qualifiers, select the value that yields the strongest range
@@ -394,9 +394,10 @@ class SpecSet(object):
         if '==' in by_qualifiers:
             # Multiple '==' keys are conflicts
             if len(set(by_qualifiers['=='])) > 1:
-                raise ConflictError('Conflict: %s' %
-                                    (' with '.join(map(lambda v: '%s==%s' % (name, v),
-                                                       by_qualifiers['=='],))))
+                raise ConflictError('Conflict: %s' % (
+                    ' with '.join(map(lambda v: '%s==%s from %s' % (
+                        name, v, format_source(('==', v))),
+                                      by_qualifiers['=='],))))
 
             # Pick the only == qualifier
             by_qualifiers['=='] = first(by_qualifiers['=='])
@@ -417,7 +418,7 @@ class SpecSet(object):
                             "{name}{op}{version}{source}.".format(
                                 name=name, pinned=pinned_version,
                                 op=op, version=value,
-                                source=format_source(('==', pinned_version), (op, value))))
+                                source=format_source_ab(('==', pinned_version), (op, value))))
                 if qual == '!=':
                     # != is the only qualifier than can have multiple values
                     for val in value:
@@ -427,7 +428,7 @@ class SpecSet(object):
                                 "{name}!={version}{source}.".format(
                                     name=name, pinned=pinned_version,
                                     version=val,
-                                    source=format_source(('==', pinned_version), ('!=', val))))
+                                    source=format_source_ab(('==', pinned_version), ('!=', val))))
 
                 # If no conflicts are found, prefer the pinned version and
                 # discard the inequality pred
