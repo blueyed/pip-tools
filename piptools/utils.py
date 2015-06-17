@@ -2,6 +2,8 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
+import os
+
 from itertools import groupby
 
 from pip.vcs import get_src_requirement
@@ -20,6 +22,7 @@ def format_requirement(ireq):
     in a less verbose way than using its `__str__` method.
     """
     if ireq.source_dir:
+        assert os.path.exists(ireq.source_dir)
         line = get_src_requirement(dist=ireq.get_dist(),
                                    location=ireq.source_dir,
                                    find_tags=True)
