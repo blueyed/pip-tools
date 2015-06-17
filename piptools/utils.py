@@ -6,6 +6,7 @@ import os
 
 from itertools import groupby
 
+from pip.index import Link
 from pip.vcs import get_src_requirement
 
 from click import style
@@ -27,7 +28,12 @@ def format_requirement(ireq):
         if ireq.source_dir and os.path.exists(ireq.source_dir):
             line = get_src_requirement(dist=ireq.get_dist(),
                                        location=ireq.source_dir,
-                                       find_tags=True)
+                                       find_tags=False)
+            # Keep original egg fragment.
+            if ireq.link.egg_fragment:
+                line = '{}#egg={}'.format(Link(line).url_without_fragment,
+                                          ireq.link.egg_fragment)
+
         else:
             line = str(ireq.link)
     else:
