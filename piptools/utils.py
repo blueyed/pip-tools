@@ -29,6 +29,13 @@ def format_requirement(ireq):
             line = get_src_requirement(dist=ireq.get_dist(),
                                        location=ireq.source_dir,
                                        find_tags=False)
+            line_link = Link(line)
+
+            # Prepend 'vcs+' which gets left out for 'git://', 'hg://' and
+            # 'bzr://' URLs.  Ref: https://github.com/pypa/pip/pull/2913.
+            if not '+' in line_link.scheme:
+                line = '{}+{}'.format(line_link.scheme, line)
+
             # Keep original egg fragment.
             if ireq.link.egg_fragment:
                 line = '{}#egg={}'.format(Link(line).url_without_fragment,
