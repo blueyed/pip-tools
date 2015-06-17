@@ -9,6 +9,7 @@ from itertools import chain, count
 import click
 from first import first
 from pip.req import InstallRequirement
+from pip.vcs import vcs
 
 from .cache import DependencyCache
 from .exceptions import UnsupportedConstraint
@@ -87,7 +88,7 @@ class Resolver(object):
 
     def _check_constraints(self):
         for constraint in chain(self.our_constraints, self.their_constraints):
-            if constraint.link is not None and constraint.link.is_artifact:
+            if constraint.link and constraint.link.scheme not in vcs.all_schemes:
                 msg = ('pip-compile does not support artifact URLs as packages'
                        ' (but you can use VCS URLs).')
             elif constraint.extras:

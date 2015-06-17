@@ -7,7 +7,7 @@ import os
 from itertools import groupby
 
 from pip.index import Link
-from pip.vcs import get_src_requirement
+from pip.vcs import get_src_requirement, vcs
 
 from click import style
 from first import first
@@ -22,7 +22,7 @@ def format_requirement(ireq):
     Generic formatter for pretty printing InstallRequirements to the terminal
     in a less verbose way than using its `__str__` method.
     """
-    if ireq.link and not ireq.link.is_artifact:
+    if ireq.link and ireq.link.scheme in vcs.all_schemes:
         # NOTE: might be called for debug logging, where the source_dir does
         # not exist yet!
         if ireq.source_dir and os.path.exists(ireq.source_dir):
