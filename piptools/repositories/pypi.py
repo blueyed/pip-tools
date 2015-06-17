@@ -61,6 +61,8 @@ class PyPIRepository(BaseRepository):
         # format_requirement/get_src_requirement.
         if hasattr(self, '_build_dir'):
             self._old_build_dirs.append(self._build_dir)
+        if hasattr(self, '_source_dir'):
+            self._old_build_dirs.append(self._source_dir)
 
         self._build_dir = TemporaryDirectory('build')
         self._source_dir = TemporaryDirectory('source')
