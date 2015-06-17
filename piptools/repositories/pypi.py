@@ -11,7 +11,7 @@ from pip.req import InstallRequirement
 from pip.req.req_set import RequirementSet
 
 from ..exceptions import NoCandidateFound
-from ..utils import is_pinned_requirement, lookup_table
+from ..utils import lookup_table
 from .base import BaseRepository
 
 try:
