@@ -4,6 +4,8 @@ from __future__ import (absolute_import, division, print_function,
 
 from itertools import groupby
 
+from pip.vcs import get_src_requirement
+
 from click import style
 from first import first
 
@@ -17,10 +19,19 @@ def format_requirement(ireq):
     Generic formatter for pretty printing InstallRequirements to the terminal
     in a less verbose way than using its `__str__` method.
     """
-    if ireq.editable:
-        line = '-e {}'.format(ireq.link)
+    if ireq.source_dir:
+        line = get_src_requirement(dist=ireq.get_dist(),
+                                   location=ireq.source_dir,
+                                   find_tags=True)
+    # Should not really happen for now.
+    elif ireq.link:
+        line = str(ireq.link)
     else:
         line = str(ireq.req)
+
+    if ireq.editable:
+        line = '-e {}'.format(line)
+
     return line
 
 
