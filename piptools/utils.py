@@ -21,11 +21,10 @@ def format_requirement(ireq):
     Generic formatter for pretty printing InstallRequirements to the terminal
     in a less verbose way than using its `__str__` method.
     """
-    if ireq.link:
-        if (not ireq.link.is_artifact and ireq.source_dir and
-                # NOTE: might be called for debug logging, where the source_dir
-                # does not exist yet!
-                os.path.exists(ireq.source_dir)):
+    if ireq.link and not ireq.link.is_artifact:
+        # NOTE: might be called for debug logging, where the source_dir does
+        # not exist yet!
+        if ireq.source_dir and os.path.exists(ireq.source_dir):
             line = get_src_requirement(dist=ireq.get_dist(),
                                        location=ireq.source_dir,
                                        find_tags=True)
