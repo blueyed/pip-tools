@@ -21,6 +21,13 @@ green = partial(click.style, fg='green')
 magenta = partial(click.style, fg='magenta')
 
 
+def _dep_key(ireq):
+    if ireq.req is None and ireq.link is not None:
+        return str(ireq.link)
+    else:
+        return ireq.req.key
+
+
 class Resolver(object):
     def __init__(self, constraints, repository, cache=None, prereleases=False, clear_caches=False):
         """
@@ -116,7 +123,7 @@ class Resolver(object):
             flask~=0.7
 
         """
-        for _, ireqs in full_groupby(constraints, key=lambda ireq: ireq.req.key):
+        for _, ireqs in full_groupby(constraints, key=_dep_key):
             ireqs = list(ireqs)
             editable_ireq = first(ireqs, key=lambda ireq: ireq.editable)
             if editable_ireq:
@@ -143,7 +150,7 @@ class Resolver(object):
         configuration.
         """
         # Sort this list for readability of terminal output
-        constraints = sorted(self.constraints, key=lambda ireq: ireq.req.key)
+        constraints = sorted(self.constraints, key=_dep_key)
         log.debug('Current constraints:')
         for constraint in constraints:
             log.debug('  {}'.format(constraint))
@@ -169,9 +176,8 @@ class Resolver(object):
             for new_dependency in sorted(diff, key=lambda req: req.key):
                 log.debug('  adding {}'.format(new_dependency))
 
-        # Store the last round's results in the their_constraints set
-        # (overriding what was in there)
-        self.their_constraints = theirs
+        # Store the last round's results in the their_constraints
+        self.their_constraints |= theirs
         return has_changed, best_matches
 
     def get_best_match(self, ireq):
